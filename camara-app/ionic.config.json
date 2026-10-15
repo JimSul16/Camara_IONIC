@@ -1,0 +1,7 @@
+{
+  "name": "camara-app",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}

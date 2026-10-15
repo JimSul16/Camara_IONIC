@@ -1,0 +1,240 @@
+<!-- OBSIDIAN LENS: Reflex Studio Darkroom Interface -->
+<ion-header class="ion-no-border">
+  <ion-toolbar class="studio-toolbar">
+    <!-- Camera Reflex Telemetry HUD -->
+    <div class="hud-bar" role="region" aria-label="Telemetría de Cámara">
+      <div class="hud-left">
+        <span class="hud-indicator active" title="Sensor Listo">
+          <span class="dot"></span> RDY
+        </span>
+        <span class="hud-pill">ISO 100</span>
+        <span class="hud-pill">RAW+JPG</span>
+        <span class="hud-pill"><ion-icon name="flash-outline"></ion-icon> AUTO</span>
+      </div>
+
+      <div class="hud-center">
+        <h1 class="brand-title">OBSIDIAN <span>LENS</span></h1>
+      </div>
+
+      <div class="hud-right">
+        <div class="counter-badge" [attr.aria-label]="photoService.photoCount() + ' fotos capturadas'">
+          <ion-icon name="images-outline"></ion-icon>
+          <span>{{ photoService.photoCount() }}</span>
+        </div>
+      </div>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="studio-content">
+  <!-- Spinner indicator while camera is processing -->
+  @if (isCapturing()) {
+    <div class="shutter-flash-overlay">
+      <div class="processing-box glass-panel">
+        <ion-spinner name="crescent" color="primary"></ion-spinner>
+        <p>Procesando captura RAW...</p>
+      </div>
+    </div>
+  }
+
+  <div class="content-container">
+    <!-- VIEWFINDER HERO BANNER (When photos exist) -->
+    @if (recentPhoto; as recent) {
+      <section class="viewfinder-section" aria-label="Visor Réflex de última toma">
+        <div class="viewfinder-frame glass-panel">
+          <!-- Reflex Focus Marks Overlay -->
+          <div class="focus-bracket top-left"></div>
+          <div class="focus-bracket top-right"></div>
+          <div class="focus-bracket bottom-left"></div>
+          <div class="focus-bracket bottom-right"></div>
+          <div class="center-crosshair">+</div>
+
+          <img [src]="recent.webviewPath" [alt]="recent.name" class="recent-preview-img" (click)="openDetail(recent)" />
+
+          <div class="viewfinder-meta">
+            <span class="recent-tag">ÚLTIMA CAPTURA</span>
+            <span class="recent-name">{{ recent.name }}</span>
+            <span class="recent-specs">{{ recent.sizeKb }} KB • {{ recent.dateFormatted }}</span>
+          </div>
+
+          <button class="inspect-btn" (click)="openDetail(recent)" aria-label="Inspeccionar última foto a pantalla completa">
+            <ion-icon name="expand-outline"></ion-icon>
+          </button>
+        </div>
+      </section>
+    }
+
+    <!-- EMPTY STATE (When no photos yet) -->
+    @if (photoService.photoCount() === 0 && !isCapturing()) {
+      <div class="empty-studio-state glass-panel">
+        <div class="studio-lens-graphic">
+          <div class="aperture-ring">
+            <div class="inner-aperture">
+              <ion-icon name="camera-outline"></ion-icon>
+            </div>
+          </div>
+        </div>
+        <h2>Estudio Fotográfico Preparado</h2>
+        <p>No se han registrado capturas aún. Presiona el botón del obturador inferior para registrar tu primera fotografía en alta calidad.</p>
+        
+        <div class="empty-actions">
+          <button class="primary-studio-btn" (click)="takePhoto()">
+            <ion-icon name="camera"></ion-icon>
+            <span>Capturar Ahora</span>
+          </button>
+          <button class="secondary-studio-btn" (click)="pickFromGallery()">
+            <ion-icon name="images"></ion-icon>
+            <span>Importar de Galería</span>
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- GALLERY SECTION -->
+    @if (photoService.photoCount() > 0) {
+      <section class="gallery-section" aria-label="Galería de Fotografías">
+        <div class="section-header">
+          <div class="title-with-badge">
+            <h2>Carrete de Fotografías</h2>
+            <span class="storage-tag">Almacenamiento: {{ (photoService.totalStorageKb() / 1024) | number:'1.1-2' }} MB</span>
+          </div>
+
+          <button class="picker-btn" (click)="openCaptureOptions()" aria-label="Abrir opciones de captura">
+            <ion-icon name="sparkles-outline"></ion-icon>
+            <span>Opciones</span>
+          </button>
+        </div>
+
+        <ion-grid class="photos-grid ion-no-padding">
+          <ion-row>
+            @for (photo of photoService.photos(); track photo.id) {
+              <ion-col size="6" size-md="4" size-lg="3">
+                <article class="photo-card glass-panel" (click)="openDetail(photo)">
+                  <div class="card-image-wrap">
+                    <img [src]="photo.webviewPath" [alt]="photo.name" loading="lazy" />
+                    <div class="card-gradient"></div>
+
+                    <!-- Size & Format Badge -->
+                    <span class="badge-size">{{ photo.sizeKb }} KB</span>
+
+                    <!-- Quick Delete Button -->
+                    <button class="quick-delete-btn" (click)="promptDelete(photo, $event)" aria-label="Eliminar fotografía">
+                      <ion-icon name="trash-outline"></ion-icon>
+                    </button>
+                  </div>
+
+                  <div class="card-details">
+                    <span class="card-date">
+                      <ion-icon name="time-outline"></ion-icon>
+                      {{ photo.dateFormatted }}
+                    </span>
+                  </div>
+                </article>
+              </ion-col>
+            }
+          </ion-row>
+        </ion-grid>
+      </section>
+    }
+  </div>
+
+  <!-- FLOATING STUDIO SHUTTER CONTROL BAR -->
+  <div class="shutter-bar-wrap" role="toolbar" aria-label="Controles del Obturador">
+    <div class="shutter-bar glass-panel">
+      <!-- Import / Gallery Button -->
+      <button class="shutter-aux-btn" (click)="pickFromGallery()" aria-label="Elegir foto de la galería">
+        <ion-icon name="images-outline"></ion-icon>
+        <span class="aux-label">Galería</span>
+      </button>
+
+      <!-- Central Reflex Shutter Button with Concentric Tactile Rings -->
+      <div class="shutter-trigger-container">
+        <button 
+          class="shutter-main-btn" 
+          [class.active]="isShutterActive()"
+          (click)="takePhoto()" 
+          aria-label="Disparar obturador y capturar fotografía">
+          <div class="outer-ring">
+            <div class="inner-button">
+              <ion-icon name="camera"></ion-icon>
+            </div>
+          </div>
+        </button>
+      </div>
+
+      <!-- Quick Options Button -->
+      <button class="shutter-aux-btn" (click)="openCaptureOptions()" aria-label="Menú de disparo">
+        <ion-icon name="hardware-chip-outline"></ion-icon>
+        <span class="aux-label">Modo</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- FULLSCREEN DETAIL & METADATA MODAL -->
+  <ion-modal [isOpen]="selectedPhoto() !== null" (didDismiss)="closeDetail()" class="photo-detail-modal">
+    <ng-template>
+      <div class="modal-backdrop">
+        <div class="modal-toolbar">
+          <div class="modal-title-wrap">
+            <span class="modal-tag">INSPECTOR RAW</span>
+            <h3>{{ selectedPhoto()?.name }}</h3>
+          </div>
+          <button class="close-modal-btn" (click)="closeDetail()" aria-label="Cerrar visor">
+            <ion-icon name="close-outline"></ion-icon>
+          </button>
+        </div>
+
+        <div class="modal-image-stage">
+          @if (selectedPhoto(); as photo) {
+            <img [src]="photo.webviewPath" [alt]="photo.name" class="modal-zoom-img" />
+          }
+        </div>
+
+        @if (selectedPhoto(); as photo) {
+          <div class="modal-meta-drawer glass-panel">
+            <div class="meta-row">
+              <div class="meta-item">
+                <span class="label">FECHA DE DISPARO</span>
+                <span class="value">{{ photo.dateFormatted }}</span>
+              </div>
+              <div class="meta-item">
+                <span class="label">PESO ESTIMADO</span>
+                <span class="value">{{ photo.sizeKb }} KB</span>
+              </div>
+              <div class="meta-item">
+                <span class="label">FORMATO</span>
+                <span class="value">{{ photo.format | uppercase }}</span>
+              </div>
+            </div>
+
+            <div class="meta-item path-item">
+              <span class="label">RUTA EN ALMACENAMIENTO FÍSICO</span>
+              <span class="value code">{{ photo.filepath }}</span>
+            </div>
+
+            <div class="modal-actions">
+              <button class="delete-action-btn" (click)="promptDelete(photo)">
+                <ion-icon name="trash"></ion-icon>
+                <span>Eliminar del Dispositivo</span>
+              </button>
+              <button class="dismiss-action-btn" (click)="closeDetail()">
+                <span>Cerrar</span>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </ng-template>
+  </ion-modal>
+
+  <!-- CONFIRM DELETE ALERT DIALOG -->
+  <ion-alert
+    [isOpen]="isAlertOpen()"
+    header="Eliminar Fotografía"
+    subHeader="Esta acción es irreversible"
+    message="¿Deseas eliminar permanentemente esta fotografía del almacenamiento interno de la aplicación y de la galería del dispositivo?"
+    [buttons]="alertButtons"
+    (didDismiss)="isAlertOpen.set(false)"
+    cssClass="obsidian-alert"
+  ></ion-alert>
+</ion-content>

@@ -1,0 +1,52 @@
+// Obsidian Lens Theme - Studio Darkroom Palette
+:root {
+  /** Primary: Amber Glow **/
+  --ion-color-primary: #f59e0b;
+  --ion-color-primary-rgb: 245, 158, 11;
+  --ion-color-primary-contrast: #0f172a;
+  --ion-color-primary-contrast-rgb: 15, 23, 42;
+  --ion-color-primary-shade: #d97706;
+  --ion-color-primary-tint: #fbbf24;
+
+  /** Secondary: Electric Cyan Telemetry **/
+  --ion-color-secondary: #06b6d4;
+  --ion-color-secondary-rgb: 6, 182, 212;
+  --ion-color-secondary-contrast: #0f172a;
+  --ion-color-secondary-contrast-rgb: 15, 23, 42;
+  --ion-color-secondary-shade: #0891b2;
+  --ion-color-secondary-tint: #22d3ee;
+
+  /** Danger: Shutter Red **/
+  --ion-color-danger: #ef4444;
+  --ion-color-danger-rgb: 239, 68, 68;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade: #dc2626;
+  --ion-color-danger-tint: #f87171;
+
+  /** Success: Viewfinder Ready Green **/
+  --ion-color-success: #10b981;
+  --ion-color-success-rgb: 16, 185, 129;
+  --ion-color-success-contrast: #ffffff;
+  --ion-color-success-contrast-rgb: 255, 255, 255;
+  --ion-color-success-shade: #059669;
+  --ion-color-success-tint: #34d399;
+
+  /** Darkroom Carbon Surfaces **/
+  --ion-background-color: #090d16;
+  --ion-background-color-rgb: 9, 13, 22;
+  --ion-text-color: #f1f5f9;
+  --ion-text-color-rgb: 241, 245, 249;
+
+  --ion-card-background: #111827;
+  --ion-toolbar-background: #090d16;
+  --ion-item-background: #111827;
+}
+
+/* Glassmorphism and Studio Accent Utilities */
+.glass-panel {
+  background: rgba(17, 24, 39, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
